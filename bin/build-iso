@@ -1,0 +1,10 @@
+#!/bin/bash
+set -e
+
+sudo rm -rf /tmp/archiso-tmp work out
+
+sudo mkarchiso -v -w /tmp/archiso-tmp -o ./release configs/forensic
+
+sudo chown -R $USER:$USER ./release
+
+echo "ISO Built and stored in ./release"

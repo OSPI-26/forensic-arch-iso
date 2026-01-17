@@ -4,10 +4,12 @@ set -e -u
 echo "Customizing Forensic Arch ISO environment..."
 
 systemctl enable NetworkManager
-systemctl enable sshd
 
 useradd -m -G wheel,audio,video,storage,optical -s /bin/bash forensics
 echo "forensics:forensics" | chpasswd
+
+mkdir -p /etc/sudoers.d
+chmod 750 /etc/sudoers.d
 
 echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" >/etc/sudoers.d/wheel
 chmod 440 /etc/sudoers.d/wheel
