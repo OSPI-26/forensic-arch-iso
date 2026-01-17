@@ -3,15 +3,19 @@ set -e -u
 
 echo "Customizing Forensic Arch ISO environment..."
 
+# Enable essential services
 systemctl enable NetworkManager
-systemctl enable sshd
 
-useradd -m -G wheel,audio,video,storage,optical -s /bin/bash forensics
+mkdir -p /etc/sudoers.d
+chmod 750 /etc/sudoers.d
+
+# Create forensics user
+useradd -m -G wheel -s /bin/bash forensics
 echo "forensics:forensics" | chpasswd
-
 echo "%wheel ALL=(ALL:ALL) NOPASSWD: ALL" >/etc/sudoers.d/wheel
 chmod 440 /etc/sudoers.d/wheel
 
+# Set up auto-login
 mkdir -p /etc/systemd/system/getty@tty1.service.d
 cat >/etc/systemd/system/getty@tty1.service.d/autologin.conf <<EOF
 [Service]
@@ -19,68 +23,61 @@ ExecStart=
 ExecStart=-/sbin/agetty -o '-p -f -- \\u' --noclear --autologin forensics %I \$TERM
 EOF
 
+# Create installer launcher script
 cat >/home/forensics/.bash_profile <<'PROFILE_EOF'
-# Auto-run installer on first login
-if [ ! -f ~/.forensic-arch-installed ]; then
+if [ ! -f ~/.installer-launched ]; then
     clear
     echo "═══════════════════════════════════════════════════════════"
-    echo "  Welcome to Forensic Arch Live Environment"
+    echo "  FORENSIC ARCH INSTALLER"
     echo "═══════════════════════════════════════════════════════════"
     echo ""
-    echo "Starting Forensic Arch installation..."
-    echo "This will download and install the full system configuration."
+    echo "This will install Arch Linux with Forensic Arch configuration."
     echo ""
     
-    # Try to download and run the installer
-    if bash <(curl -sL https://raw.githubusercontent.com/OSPI-26/forensic-arch/main/boot.sh); then
-        touch ~/.forensic-arch-installed
+    # Run archinstall
+    sudo archinstall
+    
+    # After archinstall completes, offer to install Forensic Arch
+    echo ""
+    echo "═══════════════════════════════════════════════════════════"
+    echo "  Base system installed!"
+    echo "═══════════════════════════════════════════════════════════"
+    echo ""
+    read -p "Install Forensic Arch configuration now? [Y/n]: " install_config
+    
+    if [[ ! $install_config =~ ^[Nn]$ ]]; then
+        echo "Installing Forensic Arch to /mnt..."
+        
+        # Chroot and install
+        sudo arch-chroot /mnt /bin/bash <<'CHROOT_EOF'
+# Inside the installed system now
+pacman -Sy --noconfirm git curl
+
+# Run the Forensic Arch installer
+bash <(curl -sL https://raw.githubusercontent.com/YOURUSERNAME/forensic-arch/main/boot.sh)
+CHROOT_EOF
+        
         echo ""
         echo "✓ Installation complete!"
         echo ""
-        read -p "Press Enter to reboot..."
-        sudo reboot
-    else
-        echo ""
-        echo "✗ Installation failed. Check your internet connection."
-        echo "  You can manually install later by running:"
-        echo "  bash <(curl -sL https://raw.githubusercontent.com/OSPI-26/forensic-arch/main/boot.sh)"
-        echo ""
+        read -p "Reboot now? [Y/n]: " do_reboot
+        if [[ ! $do_reboot =~ ^[Nn]$ ]]; then
+            sudo reboot
+        fi
     fi
+    
+    touch ~/.installer-launched
 fi
 PROFILE_EOF
 
 chown forensics:forensics /home/forensics/.bash_profile
 
-echo "forensic-arch" >/etc/hostname
-
-cat >/etc/hosts <<EOF
-127.0.0.1   localhost
-::1         localhost
-127.0.1.1   forensic-arch.localdomain forensic-arch
-EOF
-
-echo "en_US.UTF-8 UTF-8" >/etc/locale.gen
-locale-gen
-echo "LANG=en_US.UTF-8" >/etc/locale.conf
-
-ln -sf /usr/share/zoneinfo/UTC /etc/localtime
-
+# Welcome message
 cat >/etc/motd <<'EOF'
-
   ╔═══════════════════════════════════════════════════════════╗
-  ║                                                           ║
-  ║              FORENSIC ARCH LIVE ENVIRONMENT               ║
-  ║                                                           ║
-  ║  A modern Arch Linux distribution for digital forensics   ║
-  ║                                                           ║
+  ║              FORENSIC ARCH INSTALLER                      ║
+  ║  This will install Arch Linux + Forensic configuration    ║
   ╚═══════════════════════════════════════════════════════════╝
-
-  Default credentials:
-    Username: forensics
-    Password: forensics
-
-  The installer will start automatically on first login.
-
 EOF
 
 echo "Customization complete!"
