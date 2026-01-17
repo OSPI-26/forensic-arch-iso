@@ -12,4 +12,5 @@ wget
 mkinitcpio-archiso
 memtest86+-efi
 memtest86+
+sudo
 edk2-shell
