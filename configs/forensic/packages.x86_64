@@ -1,6 +1,7 @@
 base
 linux
 linux-firmware
+syslinux
 networkmanager
 nano
 vim
@@ -8,3 +9,4 @@ archinstall
 git
 curl
 wget
+edk2-shell

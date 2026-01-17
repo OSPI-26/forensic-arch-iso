@@ -1,0 +1,8 @@
+/work/
+/out/
+/release/
+/tmp/
+
+/archiso-tmp/
+*.iso
+*.iso.sig
