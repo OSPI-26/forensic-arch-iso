@@ -9,4 +9,7 @@ archinstall
 git
 curl
 wget
+mkinitcpio-archiso
+memtest86+-efi
+memtest86+
 edk2-shell
