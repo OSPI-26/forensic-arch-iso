@@ -189,12 +189,4 @@ Required tools:
 ## 7. Development Workflow
 
 Branch protection is enabled on main branch.
-To start contributing follow the below step.
 
-Steps:
-
-1. Fork or create branch:
-   ```bash
-   git checkout -b <branchname>
-  
-and start developing.
