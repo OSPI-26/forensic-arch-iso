@@ -10,9 +10,10 @@
  - so first we are creating a forensics profile
  - any profile that is created before arch install is only for the installation process
  - that explains why I was not able to find this user after the installation
- - we are also overriding getty to autologin (I think the autologin.conf code is wrong since when I was expermienting with something the iso started glitching)
+ - we are also overriding getty to autologin 
  - getty is the first thing that starts so normally,it starts, we login as root and then type archinstall or do manual installation
- - but since this is getting overrided it auto logins to forensics user
+ - but since this is getting overrided it auto logins to forensics user and opens bash
+ - since bash runs .bash_profile 
  - where arch install gets executed
  
 
@@ -34,7 +35,7 @@ These are for arch packages available through pacman
 
 ### pacman.conf
 
-Any custom definied arch packages are defined here
+Any custom definied arch packages that needs to be included are defined here
 
 ### airootfs
 
